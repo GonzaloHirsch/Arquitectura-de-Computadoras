@@ -1,6 +1,8 @@
 
 GLOBAL print
 GLOBAL exit
+GLOBAL numberToString
+GLOBAL printAlternative
 
 section .text
 
@@ -14,6 +16,19 @@ print:
 	pushad		; hago backup de los registros
 
 	call strlen
+	mov ecx, ebx	; la cadena esta en ebx
+	mov edx, eax	; en eax viene el largo de la cadena
+
+	mov ebx, 1		; FileDescriptor (STDOUT)
+	mov eax, 4		; ID del Syscall WRITE
+	int 80h
+	
+	popad 		; restauro los registros
+	ret	
+
+printAlternative:
+	pushad		; hago backup de los registros
+
 	mov ecx, ebx	; la cadena esta en ebx
 	mov edx, eax	; en eax viene el largo de la cadena
 
@@ -66,20 +81,41 @@ strlen:
 	
 
 numberToString:
+	push ebp
+	mov	ebp, esp
+	pushad
+
 	mov ecx, 10		;guardo el divisor
-	pop eax			;recupero el numero
-	pop	ebx			;recupero la posicion de memoria
+	mov eax, dword [ebp + 8]			;recupero el numero
+	mov	ebx, dword [ebp + 12]			;recupero la posicion de memoria
+	push ebx
+	add	ebx, 10
+	mov	[ebx], byte 0
+	dec ebx
+	mov	[ebx], byte 0xA
+	dec ebx
 .cicle:
 	mov edx, 0		;limpio el resto
 	div	ecx
+	cmp eax, 0		;veo si eax = 0
 	jz	.end
 	add	edx, 30h
-	mov [ebx], edx
-	inc ebx
+	mov [ebx], dl
+	dec ebx
 	jmp .cicle
 .end:
 	add	edx, 30h
-	mov [ebx], edx
-	inc ebx
-	mov	[ebx + 1], 0
+	mov [ebx], dl
+
+	pop ecx			;recupero ebx original
+	mov edx, ebx	;edx = ebx
+	add ecx, 11
+	sub ecx, edx	;ebx -= ecx
+	mov eax, ecx
+	call printAlternative
+
+
+	popad
+	mov	esp, ebp
+	pop ebp
 	ret

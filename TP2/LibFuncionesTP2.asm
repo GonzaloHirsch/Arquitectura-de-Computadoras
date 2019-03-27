@@ -3,6 +3,10 @@ GLOBAL _factorial
 GLOBAL _multiplos
 
 EXTERN print
+EXTERN numberToString
+
+section .bss
+strPosition: resb 9
 
 section .text
 
@@ -43,15 +47,19 @@ _factorial:
 _multiplos:
 	push ebp						;pushes ebp to the stack
 	mov	ebp, esp					;ebp = esp
-	mov	edx, dword ptr[ebp + 0xC]	;edx = k
-	mov eax, dword ptr[ebp + 0x8]	;eax = n
-	mov ecx, eax 					;ecx = eax
+
+	mov	edx, dword [ebp + 0xC]	;edx = k
+	mov eax, dword [ebp + 0x8]	;eax = n
+	mov ecx, eax 				;ecx = eax
 .cicle:
 	cmp eax, edx
 	jle .printNumber
 	jmp .end
 .printNumber:
-	;print eax;
+	sub esp, 8
+	mov dword [esp], eax
+	mov dword [esp + 4], strPosition
+	call numberToString
 	add eax, ecx 					;eax += ecx
 	jmp .cicle
 .end:
@@ -59,5 +67,9 @@ _multiplos:
 	pop ebp
 	ret
 
-
+; STACK
+; ebo
+; 2
+; 11
+; ebp
 	
